@@ -30,11 +30,11 @@ export function createMovieService(): IMovieService {
   }
 
   function getNextBatch(): MovieModel[] {
+    const previousCount = displayedCount;
     const remaining = allMovies.length - displayedCount;
     const itemsToLoad = Math.min(remaining, moviesPerLoad);
-    const batch = allMovies.slice(0, displayedCount + itemsToLoad);
     displayedCount += itemsToLoad;
-    return batch;
+    return allMovies.slice(previousCount, displayedCount);
   }
 
   function hasMore(): boolean {

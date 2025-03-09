@@ -6,7 +6,7 @@ export interface InfiniteScrollOptions {
 }
 
 const initInfiniteScroll = (options: InfiniteScrollOptions) => {
-  const { container, onLoadMore, hasMore, threshold = 0.8 } = options;
+  const { container, onLoadMore, hasMore, threshold = 1 } = options;
 
   const observer = new IntersectionObserver(
     (entries) => {

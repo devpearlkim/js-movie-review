@@ -1,6 +1,5 @@
 import initInfiniteScroll from "./../utils/infiniteScroll";
 import { createMovieService } from "../services/createMovieService";
-import { showSkeletonUI, renderMovies } from "../components/MovieRenderer";
 import { showErrorMessage } from "../utils/error";
 import { debounce } from "../utils/helper";
 import { MovieCategory, IMovieService, MovieModel } from "../types/type";
@@ -13,6 +12,12 @@ import {
 } from "../constants";
 import { getCurrentMode } from "../utils/state";
 import { Tabs } from "../components/Tabs";
+import {
+  appendMovies,
+  removeSkeletonUI,
+  renderMoviesInitial,
+  showSkeletonUI,
+} from "../components/MovieRenderer";
 export function createMovieController(containerId: string) {
   const containerElement = document.getElementById(containerId);
   if (!containerElement) {
@@ -94,7 +99,19 @@ export function createMovieController(containerId: string) {
         ? await fetchMoviesBySearchQuery(query)
         : await fetchMoviesByCategoryName(category);
 
-      renderMovieResults(movies, query);
+      if (movies.length === 0) {
+        movieContainer.innerHTML = query
+          ? `<p>${query} 검색 결과가 없습니다.</p>`
+          : `<p>영화가 없습니다.</p>`;
+        return;
+      }
+
+      removeSkeletonUI(movieContainer);
+
+      renderMoviesInitial(movieContainer, movies);
+
+      infiniteScroll.observeLastItem();
+
       updateHeader(service);
     } catch (error) {
       displayFetchErrorMessage();
@@ -113,19 +130,6 @@ export function createMovieController(containerId: string) {
       await service.loadMovies(category);
     }
     return service.getNextBatch();
-  }
-
-  function renderMovieResults(movies: MovieModel[], query?: string) {
-    if (movies.length === 0) {
-      movieContainer.innerHTML = query
-        ? `<p>${query} 검색 결과가 없습니다.</p>`
-        : `<p>영화가 없습니다.</p>`;
-      return;
-    }
-
-    renderMovies(movieContainer, movies);
-
-    infiniteScroll.observeLastItem();
   }
 
   function displayFetchErrorMessage() {
@@ -160,8 +164,17 @@ export function createMovieController(containerId: string) {
 
   function renderNextBatch() {
     infiniteScroll.disconnect();
-    renderMovies(movieContainer, service.getNextBatch());
-    infiniteScroll.observeLastItem();
+    showSkeletonUI(movieContainer);
+
+    const newMovies = service.getNextBatch();
+    removeSkeletonUI(movieContainer);
+    appendMovies(movieContainer, newMovies);
+
+    if (service.hasMore()) {
+      infiniteScroll.observeLastItem();
+    } else {
+      infiniteScroll.disconnect();
+    }
   }
 
   function attachSearchListener() {
