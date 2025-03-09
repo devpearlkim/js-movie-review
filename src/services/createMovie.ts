@@ -1,4 +1,5 @@
 import { MovieApiDto, MovieModel } from "../types/type";
+import { getUserRating } from "../utils/storage";
 
 export function createMovie(data: MovieApiDto): MovieModel {
   const {
@@ -51,5 +52,6 @@ export function createMovie(data: MovieApiDto): MovieModel {
     getYear,
     getGenres,
     getOverview,
+    userRating: getUserRating(id),
   };
 }

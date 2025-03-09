@@ -77,7 +77,8 @@ export function createMovieController(containerId: string) {
       modal.open(movieDetails);
     } catch (error) {
       console.error(
-        `영화 상세 정보를 불러오는 데 실패했습니다. (MovieID: ${movieId})`
+        `영화 상세 정보를 불러오는 데 실패했습니다. (MovieID: ${movieId})`,
+        error
       );
     }
   }

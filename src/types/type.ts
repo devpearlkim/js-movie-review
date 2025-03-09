@@ -15,6 +15,12 @@ export interface MovieApiDto {
   overview: string;
 }
 
+export interface UserRating {
+  movieId: number;
+  score: number;
+  ratedAt: string;
+}
+
 export interface MovieModel {
   id: number;
   title: string;
@@ -24,6 +30,7 @@ export interface MovieModel {
   release_date: string;
   genres: { id: number; name: string }[];
   overview: string;
+  userRating?: UserRating | null;
 
   getThumbnailUrl: () => string;
   getBackdropUrl: () => string;

@@ -1,9 +1,13 @@
+import { RATING_MAP } from "../constants";
 import { MovieModel } from "../types/type";
+import { getUserRating, setUserRating } from "../utils/storage";
 
 export function Modal() {
   let modalElement: HTMLElement | null = null;
+  let starsContainer: HTMLElement | null = null;
+  let ratingText: HTMLElement | null = null;
 
-  function createModalTemplate() {
+  const createModalTemplate = () => {
     const template = document.createElement("div");
     template.innerHTML = `
       <div class="modal-background">
@@ -14,13 +18,15 @@ export function Modal() {
               <img src="" alt="Movie Poster">
             </div>
             <div class="modal-description">
-              <h2></h2>
+              <h2 class="movie-title"></h2>
               <p class="category"></p>
-              <p class="rate">
-                <img src="./images/star_filled.png" class="star" />
-                <span></span>
-              </p>
-              <hr />
+              <p class="rate"><strong>평점:</strong> <span class="average-rating"></span></p>
+              <div class="user-rating">
+                <p><strong>내 별점</strong></p>
+                <div class="stars"></div>
+                <p class="user-rating-text"></p>
+              </div>
+              <hr>
               <p class="detail"></p>
             </div>
           </div>
@@ -28,53 +34,107 @@ export function Modal() {
       </div>
     `;
     return template.firstElementChild as HTMLElement;
-  }
+  };
 
-  function render() {
+  const render = () => {
     if (!modalElement) {
       modalElement = createModalTemplate();
       document.body.appendChild(modalElement);
 
-      const closeButton = modalElement.querySelector(".close-modal");
-      closeButton?.addEventListener("click", close);
+      starsContainer = modalElement.querySelector(".stars");
+      ratingText = modalElement.querySelector(".user-rating-text");
 
+      modalElement
+        .querySelector(".close-modal")
+        ?.addEventListener("click", close);
       modalElement.addEventListener("click", (e) => {
         if (e.target === modalElement) close();
       });
-
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") close();
       });
-    }
-  }
 
-  function open(movie: MovieModel) {
+      starsContainer?.addEventListener("mouseover", hoverStarRating);
+      starsContainer?.addEventListener("mouseleave", resetStarRating);
+      starsContainer?.addEventListener("click", setUserRatingClick);
+    }
+  };
+
+  const open = (movie: MovieModel) => {
     if (!modalElement) return;
 
-    modalElement.querySelector("h2")!.textContent = movie.title;
+    modalElement.dataset.movieId = movie.id.toString();
+    modalElement.querySelector(".movie-title")!.textContent = movie.title;
     modalElement.querySelector(
       ".category"
     )!.textContent = `${movie.getYear()} · ${movie.getGenres()}`;
-
-    const imageEl = modalElement.querySelector(
-      ".modal-image img"
-    ) as HTMLImageElement;
-    if (imageEl) {
-      imageEl.src = movie.getThumbnailUrl();
-    }
-
-    modalElement.querySelector(".rate span")!.textContent =
+    modalElement.querySelector(".average-rating")!.textContent =
       movie.getFormattedVote();
+    (modalElement.querySelector(".modal-image img") as HTMLImageElement).src =
+      movie.getThumbnailUrl();
     modalElement.querySelector(".detail")!.textContent = movie.getOverview();
+
+    updateUserRatingUI(movie.id);
 
     modalElement.classList.add("active");
     document.body.classList.add("modal-open");
-  }
+  };
 
-  function close() {
+  const close = () => {
     modalElement?.classList.remove("active");
     document.body.classList.remove("modal-open");
-  }
+  };
+
+  const updateUserRatingUI = (movieId: number) => {
+    const userRating = getUserRating(movieId);
+    const score = userRating ? userRating.score : 0;
+    updateStarDisplay(score);
+  };
+
+  const updateStarDisplay = (score: number) => {
+    if (!starsContainer) return;
+
+    const fragment = document.createDocumentFragment();
+
+    for (let i = 2; i <= 10; i += 2) {
+      const star = document.createElement("span");
+      star.dataset.score = i.toString();
+      star.className = "star";
+      star.textContent = i <= score ? "⭐" : "☆";
+      fragment.appendChild(star);
+    }
+
+    starsContainer.innerHTML = "";
+    starsContainer.appendChild(fragment);
+
+    ratingText!.textContent = RATING_MAP[score]
+      ? `${RATING_MAP[score]} (${score}/10)`
+      : "아직 평가하지 않았어요";
+  };
+
+  const setUserRatingClick = (event: Event) => {
+    const target = event.target as HTMLElement;
+    const score = Number(target.dataset.score);
+    const movieId = Number(modalElement?.dataset.movieId);
+
+    if (!score || !movieId) {
+      return;
+    }
+
+    setUserRating(movieId, score);
+    updateUserRatingUI(movieId);
+  };
+
+  const hoverStarRating = (event: Event) => {
+    const target = event.target as HTMLElement;
+    const score = Number(target.dataset.score);
+    if (score) updateStarDisplay(score);
+  };
+
+  const resetStarRating = () => {
+    const movieId = Number(modalElement?.dataset.movieId);
+    if (movieId) updateUserRatingUI(movieId);
+  };
 
   return { render, open, close };
 }
