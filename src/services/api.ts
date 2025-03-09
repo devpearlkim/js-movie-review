@@ -88,3 +88,12 @@ export async function fetchSearchMovies(query: string, page: number = 1) {
   });
   return data.results;
 }
+
+export async function fetchMovieDetails(movieId: number) {
+  return fetchData<MovieApiDto>({
+    endpoint: `movie/${movieId}`,
+    params: {
+      language: "ko-KR",
+    },
+  });
+}

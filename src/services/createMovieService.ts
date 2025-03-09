@@ -1,4 +1,4 @@
-import { fetchMovies, fetchSearchMovies } from "./api.js";
+import { fetchMovieDetails, fetchMovies, fetchSearchMovies } from "./api.js";
 import { DESKTOP_MOVIES_PER_LOAD } from "../constants.js";
 import { createMovie } from "./createMovie.js";
 import {
@@ -29,6 +29,11 @@ export function createMovieService(): IMovieService {
     displayedCount = 0;
   }
 
+  async function getMovieDetails(movieId: number): Promise<MovieModel> {
+    const movieData = await fetchMovieDetails(movieId);
+    return createMovie(movieData);
+  }
+
   function getNextBatch(): MovieModel[] {
     const previousCount = displayedCount;
     const remaining = allMovies.length - displayedCount;
@@ -48,6 +53,7 @@ export function createMovieService(): IMovieService {
   return {
     loadMovies,
     searchMovies,
+    getMovieDetails,
     getNextBatch,
     hasMore,
     getFirstMovie,

@@ -7,31 +7,10 @@ export function renderMoviesInitial(
   movieContainer.innerHTML = "";
 
   const movieGrid = document.createElement("div");
-  if (!movieGrid) return;
   movieGrid.classList.add("movie-grid");
 
-  const movieItemsHTML = movies
-    .map(
-      (movie) => `
-      <div class="movie-item">
-        <div class="item">
-          <img class="thumbnail" src="https://image.tmdb.org/t/p/w500${
-            movie.poster_path
-          }" alt="${movie.title}">
-          <div class="item-desc">
-            <p class="rate">
-              <img class="star" src="./images/star_empty.png">
-              <span>${movie.vote_average.toFixed(1)}</span>
-            </p>
-            <strong>${movie.title}</strong>
-          </div>
-        </div>
-      </div>
-    `
-    )
-    .join("");
+  movieGrid.innerHTML = movies.map(movieTemplate).join("");
 
-  movieGrid.innerHTML = movieItemsHTML;
   movieContainer.appendChild(movieGrid);
 }
 
@@ -42,35 +21,43 @@ export function appendMovies(
   const movieGrid = movieContainer.querySelector(".movie-grid");
   if (!movieGrid) return;
 
-  const newItemsHTML = movies
-    .map(
-      (movie) => `
-      <div class="movie-item">
-        <div class="item">
-          <img class="thumbnail" src="https://image.tmdb.org/t/p/w500${
-            movie.poster_path
-          }" alt="${movie.title}">
-          <div class="item-desc">
-            <p class="rate">
-              <img class="star" src="./images/star_empty.png">
-              <span>${movie.vote_average.toFixed(1)}</span>
-            </p>
-            <strong>${movie.title}</strong>
-          </div>
-        </div>
-      </div>
-    `
-    )
-    .join("");
-
-  movieGrid.insertAdjacentHTML("beforeend", newItemsHTML);
+  movieGrid.insertAdjacentHTML("beforeend", movies.map(movieTemplate).join(""));
 }
 
 export function showSkeletonUI(movieContainer: HTMLElement) {
   const movieGrid = movieContainer.querySelector(".movie-grid");
   if (!movieGrid) return;
 
-  const skeletonItems = Array.from({ length: 8 })
+  movieGrid.insertAdjacentHTML("beforeend", generateSkeletons(8));
+}
+
+export function removeSkeletonUI(movieContainer: HTMLElement) {
+  movieContainer
+    .querySelectorAll(".movie-item.skeleton")
+    .forEach((el) => el.remove());
+}
+
+function movieTemplate(movie: MovieModel): string {
+  return `
+    <div class="movie-item">
+      <div class="item" data-movie-id="${movie.id}">
+        <img class="thumbnail" src="https://image.tmdb.org/t/p/w500${
+          movie.poster_path
+        }" alt="${movie.title}">
+        <div class="item-desc">
+          <p class="rate">
+            <img class="star" src="./images/star_empty.png">
+            <span>${movie.vote_average.toFixed(1)}</span>
+          </p>
+          <strong>${movie.title}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function generateSkeletons(count: number): string {
+  return Array.from({ length: count })
     .map(
       () => `
       <div class="movie-item skeleton">
@@ -90,13 +77,4 @@ export function showSkeletonUI(movieContainer: HTMLElement) {
     `
     )
     .join("");
-
-  movieGrid.insertAdjacentHTML("beforeend", skeletonItems);
-}
-
-export function removeSkeletonUI(movieContainer: HTMLElement) {
-  const skeletonElements = movieContainer.querySelectorAll(
-    ".movie-item.skeleton"
-  );
-  skeletonElements.forEach((el) => el.remove());
 }

@@ -27,6 +27,7 @@ export interface IMovieService {
   loadMovies: (category: MovieCategory) => Promise<void>;
   searchMovies: (query: string) => Promise<void>;
   getNextBatch: () => MovieModel[];
+  getMovieDetails: (movieId: number) => Promise<MovieModel>;
   hasMore: () => boolean;
   getFirstMovie: () => MovieModel | null;
   setMoviesPerLoad: (num: number) => void;

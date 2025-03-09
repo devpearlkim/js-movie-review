@@ -1,6 +1,6 @@
-import { ApiMovie, Movie } from "../types/type";
+import { MovieApiDto, MovieModel } from "../types/type";
 
-export function createMovie(data: ApiMovie): Movie {
+export function createMovie(data: MovieApiDto): MovieModel {
   const { id, title, poster_path, vote_average, backdrop_path } = data;
 
   function getThumbnailUrl(): string {

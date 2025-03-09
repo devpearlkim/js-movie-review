@@ -18,6 +18,7 @@ import {
   renderMoviesInitial,
   showSkeletonUI,
 } from "../components/MovieRenderer";
+import { Modal } from "../components/Modal";
 export function createMovieController(containerId: string) {
   const containerElement = document.getElementById(containerId);
   if (!containerElement) {
@@ -27,6 +28,8 @@ export function createMovieController(containerId: string) {
 
   const movieContainer: HTMLElement = containerElement;
   const service: IMovieService = createMovieService();
+  const modal = Modal();
+
   const infiniteScroll = initInfiniteScroll({
     container: movieContainer,
     onLoadMore: renderNextBatch,
@@ -51,14 +54,35 @@ export function createMovieController(containerId: string) {
   }
 
   function init(tabs: ReturnType<typeof Tabs>) {
+    modal.render();
     tabComponent = tabs;
     attachSearchListener();
-    handleInitialState();
+    initializeMovies();
     initResizeListener();
-    window.addEventListener("popstate", handleInitialState);
+
+    window.addEventListener("popstate", initializeMovies);
+    movieContainer.addEventListener("click", fetchAndShowMovieDetails);
   }
 
-  function handleInitialState() {
+  async function fetchAndShowMovieDetails(event: Event) {
+    const target = event.target as HTMLElement;
+    const movieItem = target.closest(".item") as HTMLElement | null;
+    if (!movieItem) return;
+
+    const { movieId } = movieItem.dataset;
+    if (!movieId) return;
+
+    try {
+      const movieDetails = await service.getMovieDetails(Number(movieId));
+      modal.open(movieDetails);
+    } catch (error) {
+      console.error(
+        `영화 상세 정보를 불러오는 데 실패했습니다. (MovieID: ${movieId})`
+      );
+    }
+  }
+
+  function initializeMovies() {
     const params = new URLSearchParams(location.search);
     const searchQuery = params.get("search");
 
@@ -105,6 +129,8 @@ export function createMovieController(containerId: string) {
 
       renderMovies(movies, isInitial);
 
+      if (isInitial) {
+      }
       if (service.hasMore()) {
         infiniteScroll.observeLastItem();
       } else {
