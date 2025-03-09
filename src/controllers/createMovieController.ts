@@ -90,6 +90,7 @@ export function createMovieController(containerId: string) {
 
     if (currentMode === "search") {
       searchMovies(searchQuery!, false);
+      return;
     } else {
       fetchMoviesByCategory(
         tabComponent?.getSelectedCategory() || DEFAULT_CATEGORY
@@ -113,8 +114,6 @@ export function createMovieController(containerId: string) {
     isInitial?: boolean;
     pushState?: boolean;
   }) {
-    currentMode = getCurrentMode(query);
-
     showSkeletonUI(movieContainer);
 
     try {
@@ -129,8 +128,6 @@ export function createMovieController(containerId: string) {
 
       renderMovies(movies, isInitial);
 
-      if (isInitial) {
-      }
       if (service.hasMore()) {
         infiniteScroll.observeLastItem();
       } else {
@@ -194,12 +191,12 @@ export function createMovieController(containerId: string) {
   }
 
   function updateHistory(query?: string, pushState = true) {
-    if (pushState) {
-      history.pushState(
-        {},
-        "",
-        query ? `?search=${encodeURIComponent(query)}` : location.pathname
-      );
+    const newUrl = query
+      ? `?search=${encodeURIComponent(query)}`
+      : location.pathname;
+
+    if (pushState && location.search !== newUrl) {
+      history.pushState({}, "", newUrl);
     }
   }
 

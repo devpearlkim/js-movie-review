@@ -5,9 +5,9 @@ export const getCurrentMode = (query?: string): "search" | "category" => {
     updateTabContainer("search");
     setSearchInput(query);
     return "search";
+  } else {
+    updateTabContainer("category");
+    resetSearchInput();
+    return "category";
   }
-
-  updateTabContainer("category");
-  resetSearchInput();
-  return "category";
 };
