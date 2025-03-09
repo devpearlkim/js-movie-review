@@ -1,4 +1,3 @@
-import { createMovie } from "../services/createMovie";
 import { MovieModel } from "../types/type";
 
 export function Modal() {
@@ -17,6 +16,11 @@ export function Modal() {
             <div class="modal-description">
               <h2></h2>
               <p class="category"></p>
+              <p class="rate">
+                <img src="./images/star_filled.png" class="star" />
+                <span></span>
+              </p>
+              <hr />
               <p class="detail"></p>
             </div>
           </div>
@@ -44,15 +48,14 @@ export function Modal() {
     }
   }
 
-  function open(movieData: MovieModel) {
+  function open(movie: MovieModel) {
     if (!modalElement) return;
-
-    const movie = createMovie(movieData);
 
     modalElement.querySelector("h2")!.textContent = movie.title;
     modalElement.querySelector(
       ".category"
-    )!.textContent = `${movie.getFormattedVote()} · ${movie.getBackdropUrl()}`;
+    )!.textContent = `${movie.getYear()} · ${movie.getGenres()}`;
+
     const imageEl = modalElement.querySelector(
       ".modal-image img"
     ) as HTMLImageElement;
@@ -60,7 +63,9 @@ export function Modal() {
       imageEl.src = movie.getThumbnailUrl();
     }
 
-    modalElement.querySelector(".detail")!.textContent = movie.title;
+    modalElement.querySelector(".rate span")!.textContent =
+      movie.getFormattedVote();
+    modalElement.querySelector(".detail")!.textContent = movie.getOverview();
 
     modalElement.classList.add("active");
     document.body.classList.add("modal-open");
