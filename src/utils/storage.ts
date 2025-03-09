@@ -25,11 +25,3 @@ export function setUserRating(movieId: number, score: number): void {
     JSON.stringify(storedRatings)
   );
 }
-
-export function getAllUserRatings(): UserRating[] {
-  const storedRatings: Record<number, UserRating> = JSON.parse(
-    localStorage.getItem(STORAGE_KEYS.USER_RATINGS) || "{}"
-  );
-
-  return Object.values(storedRatings);
-}
