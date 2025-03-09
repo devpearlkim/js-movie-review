@@ -1,4 +1,5 @@
 import { Header } from "../components/Header";
+import { TAB_ITEMS } from "../constants";
 import { IMovieService } from "../types/type";
 
 export const updateTabContainer = (mode: "category" | "search"): void => {
@@ -31,3 +32,24 @@ export const updateHeader = (service: IMovieService): void => {
     });
   }
 };
+
+export function updateSectionTitle(
+  mode: "search" | "category",
+  queryOrCategory?: string
+): void {
+  const headerTitleEl = document.querySelector("main h2");
+  console.log(headerTitleEl);
+  if (!headerTitleEl) return;
+
+  if (mode === "search") {
+    headerTitleEl.textContent =
+      queryOrCategory && queryOrCategory.trim()
+        ? `${queryOrCategory} 검색 결과`
+        : "검색 결과";
+  } else {
+    const category = queryOrCategory as string | undefined;
+    const tabItem = TAB_ITEMS.find((item) => item.category === category);
+    const label = tabItem ? tabItem.label : "영화";
+    headerTitleEl.textContent = `${label} 영화`;
+  }
+}

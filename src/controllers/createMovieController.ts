@@ -3,7 +3,11 @@ import { createMovieService } from "../services/createMovieService";
 import { showErrorMessage } from "../utils/error";
 import { debounce } from "../utils/helper";
 import { MovieCategory, IMovieService, MovieModel } from "../types/type";
-import { updateHeader } from "../utils/ui";
+import {
+  updateHeader,
+  updateSectionTitle,
+  updateTabContainer,
+} from "../utils/ui";
 import {
   DEFAULT_CATEGORY,
   DESKTOP_MOVIES_PER_LOAD,
@@ -87,6 +91,10 @@ export function createMovieController(containerId: string) {
     const searchQuery = params.get("search");
 
     currentMode = getCurrentMode(searchQuery ?? "");
+    updateSectionTitle(
+      currentMode,
+      searchQuery ?? (tabComponent?.getSelectedCategory() || DEFAULT_CATEGORY)
+    );
 
     if (currentMode === "search") {
       searchMovies(searchQuery!, false);
@@ -100,6 +108,7 @@ export function createMovieController(containerId: string) {
 
   async function switchTab(newCategory: MovieCategory): Promise<void> {
     if (currentMode === "search") return;
+    updateSectionTitle("category", newCategory);
     await fetchMoviesByCategory(newCategory);
   }
 
@@ -115,6 +124,10 @@ export function createMovieController(containerId: string) {
     pushState?: boolean;
   }) {
     showSkeletonUI(movieContainer);
+
+    if (query) {
+      updateSectionTitle("search", query);
+    }
 
     try {
       const movies = await getMovies({ category, query, isInitial });
@@ -159,6 +172,7 @@ export function createMovieController(containerId: string) {
   }
 
   async function fetchMoviesBySearchQuery(query: string) {
+    updateTabContainer("search");
     await service.searchMovies(query);
     return service.getNextBatch();
   }
