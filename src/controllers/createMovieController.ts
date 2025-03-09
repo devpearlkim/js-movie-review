@@ -1,10 +1,10 @@
+import initInfiniteScroll from "./../utils/infiniteScroll";
 import { createMovieService } from "../services/createMovieService";
 import { showSkeletonUI, renderMovies } from "../components/MovieRenderer";
-import { LoadMoreButton } from "../components/LoadMoreButton";
 import { showErrorMessage } from "../utils/error";
 import { debounce } from "../utils/helper";
 import { MovieCategory, IMovieService, MovieModel } from "../types/type";
-import { addLoadMoreButton, updateHeader } from "../utils/ui";
+import { updateHeader } from "../utils/ui";
 import {
   DEFAULT_CATEGORY,
   DESKTOP_MOVIES_PER_LOAD,
@@ -22,7 +22,12 @@ export function createMovieController(containerId: string) {
 
   const movieContainer: HTMLElement = containerElement;
   const service: IMovieService = createMovieService();
-  let loadMoreButtonComponent: ReturnType<typeof LoadMoreButton> | null = null;
+  const infiniteScroll = initInfiniteScroll({
+    container: movieContainer,
+    onLoadMore: renderNextBatch,
+    hasMore: () => service.hasMore(),
+  });
+
   let currentMode: "search" | "category" = "category";
   let tabComponent: ReturnType<typeof Tabs> | null = null;
 
@@ -120,14 +125,7 @@ export function createMovieController(containerId: string) {
 
     renderMovies(movieContainer, movies);
 
-    if (service.hasMore()) {
-      loadMoreButtonComponent = addLoadMoreButton({
-        hasMore: true,
-        movieContainer,
-        renderNextBatch,
-        loadMoreButtonComponent,
-      });
-    }
+    infiniteScroll.observeLastItem();
   }
 
   function displayFetchErrorMessage() {
@@ -161,11 +159,9 @@ export function createMovieController(containerId: string) {
   }
 
   function renderNextBatch() {
+    infiniteScroll.disconnect();
     renderMovies(movieContainer, service.getNextBatch());
-
-    if (!service.hasMore()) {
-      loadMoreButtonComponent?.remove();
-    }
+    infiniteScroll.observeLastItem();
   }
 
   function attachSearchListener() {
@@ -187,6 +183,10 @@ export function createMovieController(containerId: string) {
       await searchMovies(query);
     });
   }
+
+  window.addEventListener("beforeunload", () => {
+    infiniteScroll.disconnect();
+  });
 
   return {
     init,
