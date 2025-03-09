@@ -1,7 +1,7 @@
 import { MovieApiDto, MovieModel } from "../types/type";
 import { getUserRating } from "../utils/storage";
 
-export function createMovie(data: MovieApiDto): MovieModel {
+export const createMovie = (data: MovieApiDto): MovieModel => {
   const {
     id,
     title,
@@ -13,29 +13,21 @@ export function createMovie(data: MovieApiDto): MovieModel {
     overview,
   } = data;
 
-  function getThumbnailUrl(): string {
-    return `https://image.tmdb.org/t/p/w500${poster_path}`;
-  }
+  const getThumbnailUrl = (): string =>
+    `https://image.tmdb.org/t/p/w500${poster_path}`;
 
-  function getBackdropUrl(): string {
-    return `https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/${backdrop_path}`;
-  }
+  const getBackdropUrl = (): string =>
+    `https://image.tmdb.org/t/p/w1920_and_h800_multi_faces/${backdrop_path}`;
 
-  function getFormattedVote(): string {
-    return vote_average.toFixed(1);
-  }
+  const getFormattedVote = (): string => vote_average.toFixed(1);
 
-  function getYear(): string {
-    return release_date ? release_date.split("-")[0] : "Unknown";
-  }
+  const getYear = (): string =>
+    release_date ? release_date.split("-")[0] : "Unknown";
 
-  function getGenres(): string {
-    return genres?.map((genre) => genre.name).join(", ") || "";
-  }
+  const getGenres = (): string =>
+    genres?.map((genre) => genre.name).join(", ") || "";
 
-  function getOverview(): string {
-    return overview || "상세 정보 없음.";
-  }
+  const getOverview = (): string => overview || "상세 정보 없음.";
 
   return {
     id,
@@ -54,4 +46,4 @@ export function createMovie(data: MovieApiDto): MovieModel {
     getOverview,
     userRating: getUserRating(id),
   };
-}
+};

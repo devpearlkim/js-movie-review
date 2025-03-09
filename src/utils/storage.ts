@@ -1,15 +1,15 @@
 import { STORAGE_KEYS } from "../constants";
 import { UserRating } from "../types/type";
 
-export function getUserRating(movieId: number): UserRating | null {
+export const getUserRating = (movieId: number): UserRating | null => {
   const storedRatings: Record<number, UserRating> = JSON.parse(
     localStorage.getItem(STORAGE_KEYS.USER_RATINGS) || "{}"
   );
 
   return storedRatings[movieId] || null;
-}
+};
 
-export function setUserRating(movieId: number, score: number): void {
+export const setUserRating = (movieId: number, score: number): void => {
   const storedRatings: Record<number, UserRating> = JSON.parse(
     localStorage.getItem(STORAGE_KEYS.USER_RATINGS) || "{}"
   );
@@ -24,4 +24,4 @@ export function setUserRating(movieId: number, score: number): void {
     STORAGE_KEYS.USER_RATINGS,
     JSON.stringify(storedRatings)
   );
-}
+};
