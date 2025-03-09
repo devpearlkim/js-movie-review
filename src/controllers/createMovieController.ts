@@ -68,8 +68,7 @@ export function createMovieController(containerId: string) {
       searchMovies(searchQuery!, false);
     } else {
       fetchMoviesByCategory(
-        tabComponent?.getSelectedCategory() || DEFAULT_CATEGORY,
-        true
+        tabComponent?.getSelectedCategory() || DEFAULT_CATEGORY
       );
     }
   }
@@ -82,7 +81,7 @@ export function createMovieController(containerId: string) {
   async function fetchMovies({
     category,
     query,
-    isInitial = false,
+    isInitial = true,
     pushState = true,
   }: {
     category?: MovieCategory;
@@ -95,29 +94,45 @@ export function createMovieController(containerId: string) {
     showSkeletonUI(movieContainer);
 
     try {
-      const movies = query
-        ? await fetchMoviesBySearchQuery(query)
-        : await fetchMoviesByCategoryName(category);
+      const movies = await getMovies({ category, query, isInitial });
 
-      if (movies.length === 0) {
-        movieContainer.innerHTML = query
-          ? `<p>${query} 검색 결과가 없습니다.</p>`
-          : `<p>영화가 없습니다.</p>`;
+      if (!movies.length) {
+        displayNoResultsMessage(query);
         return;
       }
 
       removeSkeletonUI(movieContainer);
 
-      renderMoviesInitial(movieContainer, movies);
+      renderMovies(movies, isInitial);
 
-      infiniteScroll.observeLastItem();
+      if (service.hasMore()) {
+        infiniteScroll.observeLastItem();
+      } else {
+        infiniteScroll.disconnect();
+      }
 
       updateHeader(service);
     } catch (error) {
       displayFetchErrorMessage();
     } finally {
-      updateHistory(query, isInitial, pushState);
+      updateHistory(query, pushState);
     }
+  }
+
+  async function getMovies({
+    category,
+    query,
+    isInitial,
+  }: {
+    category?: MovieCategory;
+    query?: string;
+    isInitial: boolean;
+  }) {
+    return isInitial
+      ? query
+        ? await fetchMoviesBySearchQuery(query)
+        : await fetchMoviesByCategoryName(category)
+      : service.getNextBatch();
   }
 
   async function fetchMoviesBySearchQuery(query: string) {
@@ -132,6 +147,18 @@ export function createMovieController(containerId: string) {
     return service.getNextBatch();
   }
 
+  function displayNoResultsMessage(query?: string) {
+    movieContainer.innerHTML = query
+      ? `<p>${query} 검색 결과가 없습니다.</p>`
+      : `<p>영화가 없습니다.</p>`;
+  }
+
+  function renderMovies(movies: MovieModel[], isInitial: boolean) {
+    isInitial
+      ? renderMoviesInitial(movieContainer, movies)
+      : appendMovies(movieContainer, movies);
+  }
+
   function displayFetchErrorMessage() {
     showErrorMessage(
       currentMode === "search"
@@ -140,8 +167,8 @@ export function createMovieController(containerId: string) {
     );
   }
 
-  function updateHistory(query?: string, isInitial = false, pushState = true) {
-    if (!isInitial && pushState) {
+  function updateHistory(query?: string, pushState = true) {
+    if (pushState) {
       history.pushState(
         {},
         "",
@@ -150,11 +177,8 @@ export function createMovieController(containerId: string) {
     }
   }
 
-  async function fetchMoviesByCategory(
-    category: MovieCategory,
-    isInitial = false
-  ) {
-    await fetchMovies({ category, isInitial });
+  async function fetchMoviesByCategory(category: MovieCategory) {
+    await fetchMovies({ category });
   }
 
   async function searchMovies(query: string, pushState = true) {
@@ -164,17 +188,8 @@ export function createMovieController(containerId: string) {
 
   function renderNextBatch() {
     infiniteScroll.disconnect();
-    showSkeletonUI(movieContainer);
 
-    const newMovies = service.getNextBatch();
-    removeSkeletonUI(movieContainer);
-    appendMovies(movieContainer, newMovies);
-
-    if (service.hasMore()) {
-      infiniteScroll.observeLastItem();
-    } else {
-      infiniteScroll.disconnect();
-    }
+    fetchMovies({ isInitial: false, pushState: false });
   }
 
   function attachSearchListener() {
