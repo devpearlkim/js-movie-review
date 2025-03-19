@@ -107,6 +107,7 @@ export function Modal() {
       const star = document.createElement("span");
       star.dataset.score = i.toString();
       star.className = "star";
+      star.style.cursor = "pointer";
       star.textContent = i <= score ? "⭐" : "☆";
       fragment.appendChild(star);
     }
@@ -122,8 +123,10 @@ export function Modal() {
   };
 
   const setUserRatingClick = (event: Event) => {
-    const target = event.target as HTMLElement;
-    const score = Number(target.dataset.score);
+    const starElement = (event.target as HTMLElement).closest(".star");
+    if (!starElement) return;
+
+    const score = Number(starElement.dataset.score);
     const movieId = Number(modalElement?.dataset.movieId);
 
     if (!score || !movieId) {
