@@ -28,13 +28,18 @@ export const showSkeletonUI = (movieContainer: HTMLElement): void => {
   const movieGrid = movieContainer.querySelector(".movie-grid");
   if (!movieGrid) return;
 
-  movieGrid.insertAdjacentHTML("beforeend", generateSkeletons(8));
+  const skeletonWrapper = document.createElement("div");
+  skeletonWrapper.classList.add("skeleton-wrapper");
+  skeletonWrapper.innerHTML = generateSkeletons(8);
+
+  movieGrid.appendChild(skeletonWrapper);
 };
 
 export const removeSkeletonUI = (movieContainer: HTMLElement): void => {
-  movieContainer
-    .querySelectorAll(".movie-item.skeleton")
-    .forEach((el) => el.remove());
+  const skeletonWrapper = movieContainer.querySelector(".skeleton-wrapper");
+  if (skeletonWrapper) {
+    skeletonWrapper.remove();
+  }
 };
 
 const movieTemplate = (movie: MovieModel): string => `

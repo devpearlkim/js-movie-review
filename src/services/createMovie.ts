@@ -1,5 +1,5 @@
 import { MovieApiDto, MovieModel } from "../types/type";
-import { getUserRating } from "../utils/storage";
+import { getUserRating } from "./userRating";
 
 export const createMovie = (data: MovieApiDto): MovieModel => {
   const {

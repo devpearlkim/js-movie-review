@@ -1,7 +1,7 @@
 export interface InfiniteScrollOptions {
   container: HTMLElement;
   onLoadMore: () => void;
-  hasMore: () => void;
+  hasMore: () => boolean;
   threshold?: number;
 }
 

@@ -37,8 +37,7 @@ export function updateSectionTitle(
   mode: "search" | "category",
   queryOrCategory?: string
 ): void {
-  const headerTitleEl = document.querySelector("main h2");
-  console.log(headerTitleEl);
+  const headerTitleEl = document.querySelector(".section-title");
   if (!headerTitleEl) return;
 
   if (mode === "search") {

@@ -1,6 +1,6 @@
 import { RATING_MAP } from "../constants";
 import { MovieModel } from "../types/type";
-import { getUserRating, setUserRating } from "../utils/storage";
+import { getUserRating, setUserRating } from "./../services/userRating";
 
 export function Modal() {
   let modalElement: HTMLElement | null = null;
@@ -37,27 +37,29 @@ export function Modal() {
   };
 
   const render = () => {
-    if (!modalElement) {
-      modalElement = createModalTemplate();
-      document.body.appendChild(modalElement);
-
-      starsContainer = modalElement.querySelector(".stars");
-      ratingText = modalElement.querySelector(".user-rating-text");
-
-      modalElement
-        .querySelector(".close-modal")
-        ?.addEventListener("click", close);
-      modalElement.addEventListener("click", (e) => {
-        if (e.target === modalElement) close();
-      });
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") close();
-      });
-
-      starsContainer?.addEventListener("mouseover", hoverStarRating);
-      starsContainer?.addEventListener("mouseleave", resetStarRating);
-      starsContainer?.addEventListener("click", setUserRatingClick);
+    if (modalElement) {
+      return;
     }
+
+    modalElement = createModalTemplate();
+    document.body.appendChild(modalElement);
+
+    starsContainer = modalElement.querySelector(".stars");
+    ratingText = modalElement.querySelector(".user-rating-text");
+
+    modalElement
+      .querySelector(".close-modal")
+      ?.addEventListener("click", close);
+    modalElement.addEventListener("click", (e) => {
+      if (e.target === modalElement) close();
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") close();
+    });
+
+    starsContainer?.addEventListener("mouseover", hoverStarRating);
+    starsContainer?.addEventListener("mouseleave", resetStarRating);
+    starsContainer?.addEventListener("click", setUserRatingClick);
   };
 
   const open = (movie: MovieModel) => {
@@ -65,14 +67,19 @@ export function Modal() {
 
     modalElement.dataset.movieId = movie.id.toString();
     modalElement.querySelector(".movie-title")!.textContent = movie.title;
-    modalElement.querySelector(
-      ".category"
-    )!.textContent = `${movie.getYear()} · ${movie.getGenres()}`;
+    const categoryElement = modalElement.querySelector(".category");
+    if (categoryElement) {
+      categoryElement.textContent = `${movie.getYear()} · ${movie.getGenres()}`;
+    }
+
     modalElement.querySelector(".average-rating")!.textContent =
       movie.getFormattedVote();
     (modalElement.querySelector(".modal-image img") as HTMLImageElement).src =
       movie.getThumbnailUrl();
-    modalElement.querySelector(".detail")!.textContent = movie.getOverview();
+    const detailElement = modalElement.querySelector(".detail");
+    if (detailElement) {
+      detailElement.textContent = movie.getOverview();
+    }
 
     updateUserRatingUI(movie.id);
 
@@ -107,9 +114,11 @@ export function Modal() {
     starsContainer.innerHTML = "";
     starsContainer.appendChild(fragment);
 
-    ratingText!.textContent = RATING_MAP[score]
-      ? `${RATING_MAP[score]} (${score}/10)`
-      : "아직 평가하지 않았어요";
+    if (ratingText) {
+      ratingText.textContent = RATING_MAP[score]
+        ? `${RATING_MAP[score]} (${score}/10)`
+        : "아직 평가하지 않았어요";
+    }
   };
 
   const setUserRatingClick = (event: Event) => {
